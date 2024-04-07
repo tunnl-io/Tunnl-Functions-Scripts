@@ -8,24 +8,53 @@ const twitterReq = Functions.makeHttpRequest({
     Authorization: `Bearer ${secrets.twitterKey}`,
   },
   params: {
-    'tweet.fields': 'public_metrics',
+    'tweet.fields': 'public_metrics,edit_controls',
   },
   timeout: 9000,
 })
 
-// TODO: backend request to get the private offer data for target # of likes
+const encryptedData = await encrypt(JSON.stringify({ offerId: `0x${offerId}` }), secrets.key)
 
-const [ twitterRes ] = await Promise.all([twitterReq])
+const backendReq = Functions.makeHttpRequest({
+  url: `https://tunnl-io-frontend.vercel.app/api/offer/getOfferData`,
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  data: {
+    encryptedData,
+  },
+  timeout: 9000,
+})
+
+const [ twitterRes, backendRes ] = await Promise.all([twitterReq, backendReq])
+
+if (backendRes.error) {
+  throw Error(`RETRYABLE Backend HTTP Error ${backendRes.code}`)
+}
+
+const encryptedOfferData = backendRes.data?.data
+
+if (!encryptedOfferData) {
+  throw Error(`No offer data found`)
+}
+
+let offerData
+try {
+  offerData = JSON.parse(await decrypt(encryptedOfferData, secrets.key))
+} catch (e) {
+  throw Error(`Failed to decrypt & parse offer data`)
+}
 
 // TODO: Replace with actual data from backend (ensure to validate the response first)
-const dummyData = {
-  createdAt: '1970-01-01T00:00:00.001Z',
-  creator_twitter_id: '1234567890',
-  required_likes: '1',
-  sponsorship_criteria: 'must be a good tweet',
+const offerDataToHash = {
+  createdAt: offerData.createdAt,
+  creator_twitter_id: offerData.creator_twitter_id,
+  required_likes: offerData.required_likes,
+  sponsorship_criteria: offerData.sponsorship_criteria,
 }
-const offerDataHash = await sha256(JSON.stringify(dummyData))
-const requiredLikes = BigInt(dummyData.required_likes)
+const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
+const requiredLikes = BigInt(offerData.required_likes)
 
 if (offerDataHash !== offerId) {
   throw Error(`Offer data hash mismatch`)
@@ -43,6 +72,8 @@ if (!twitterRes.data?.data) {
   throw Error(`Unexpected API Response`)
 }
 const tweetData = twitterRes.data?.data
+
+console.log(tweetData)
 
 if (!tweetData.public_metrics?.like_count) {
   throw Error(`No like_count in API response`)
