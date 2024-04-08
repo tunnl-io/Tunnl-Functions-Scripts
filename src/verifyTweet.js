@@ -13,31 +13,63 @@ const twitterReq = Functions.makeHttpRequest({
   },
 })
 
-// TODO Fetch offer JSON data from API
+const encryptedData = await encrypt(JSON.stringify({ offerId: `0x${offerId}` }), secrets.key)
 
-const [ twitterRes ] = await Promise.all([twitterReq])
+const backendReq = Functions.makeHttpRequest({
+  url: `https://tunnl-io-frontend.vercel.app/api/offer/getOfferData`,
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  data: {
+    encryptedData,
+  },
+  timeout: 9000,
+})
 
-// TODO: Replace with actual data from backend (ensure to validate the response first)
-const dummyData = {
-  createdAt: new Date(1),
-  creator_twitter_id: '1644137470898962433',
-  required_likes: '1',
-  sponsorship_criteria: 'The tweet must talk about the Chainlink Functions Playground and promote it to javascript developers.',
+const [ twitterRes, backendRes ] = await Promise.all([twitterReq, backendReq])
+
+if (backendRes.error) {
+  throw Error(`RETRYABLE Backend HTTP Error ${backendRes.status}`)
 }
-const offerDataHash = await sha256(JSON.stringify(dummyData))
-const authorId = dummyData.creator_twitter_id
-const sponsorshipCriteria = dummyData.sponsorship_criteria
+
+const encryptedOfferData = backendRes.data?.data
+
+if (!encryptedOfferData) {
+  throw Error(`No offer data found`)
+}
+
+let offerData
+try {
+  offerData = await decrypt(encryptedOfferData, secrets.key)
+} catch (e) {
+  throw Error(`Failed to decrypt offer data`)
+}
+try {
+  offerData = JSON.parse(offerData)
+} catch (e) {
+  throw Error(`Failed to parse offer data`)
+}
+
+const offerDataToHash = {
+  createdAt: offerData.createdAt,
+  creator_twitter_id: offerData.creator_twitter_id,
+  required_likes: offerData.required_likes,
+  sponsorship_criteria: offerData.sponsorship_criteria,
+}
+const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
+const requiredLikes = BigInt(offerData.required_likes)
 
 if (offerDataHash !== offerId) {
   throw Error(`Offer data hash mismatch`)
 }
 
 if (twitterRes.error) {
-  throw Error(`RETRYABLE Twitter HTTP Error ${twitterRes.code}`)
+  throw Error(`RETRYABLE Twitter HTTP Error ${twitterRes.status}`)
 }
 
 if (twitterRes.data?.errors) {
-  throw Error(`API Error ${twitterRes.data?.errors?.[0]?.title}`)
+  throw Error(`Twitter API Error ${twitterRes.data?.errors?.[0]?.title}`)
 }
 
 if (!twitterRes.data?.data) {
@@ -49,21 +81,26 @@ if (!tweetData.author_id) {
   throw Error(`Tweet has no author ID`)
 }
 
-if (tweetData.author_id !== authorId) {
+if (tweetData.author_id !== offerData.creator_twitter_id) {
   throw Error(`Author ID does not match creator_twitter_id`)
 }
 
 if (!tweetData.created_at) {
   throw Error(`Tweet has no creation date`)
 }
-const postDateSeconds = BigInt(Date.parse(tweetData.created_at) / 1000)
+
+const postDateSeconds = BigInt(Math.floor(Date.parse(tweetData.created_at) / 1000))
 
 if (postDateSeconds < creationDateSeconds) {
   throw Error(`Tweet was posted before offer creation date`)
 }
 
+if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - BigInt(60 * 30)) {
+  throw Error(`Tweet was posted less than 30 minutes ago`)
+}
+
 if (!tweetData.edit_history_tweet_ids) {
-  throw Error(`Tweet has no edits`)
+  throw Error(`Missing tweet edit history`)
 }
 
 if (tweetData.edit_history_tweet_ids.length > 1) {
@@ -77,7 +114,7 @@ const quotedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type 
 const repliedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type === 'replied_to').map((tweet) => tweet.id)
 
 const prompt = `The requirements are:\n"${
-  sponsorshipCriteria
+  offerData.sponsorship_criteria
 }"\n\n${
   quotedTweetId?.length > 0
     ? `The post quoted and reposted another post with an id of ${quotedTweetId[0]}.\n`
@@ -102,16 +139,16 @@ const aiRes = await Functions.makeHttpRequest({
     messages: [
       {
         role: "system",
-        content: 'Your job is to determine if a given Twitter post meets the specified requirements and provide a one word answer of either "yes" or "no".'
+        content: 'Your job is to determine if a given Twitter post meets the specified requirements and provide a one-word answer of either "yes" or "no". Please be flexible with your interpretation of the Twitter post and the requirements. Because this is a Twitter post, keep in mind that the post may contain slang, sarcasm, jargon, or newly invented words or language, especially related to Web3 and crypto. The primary goal is to detect if the post clearly violates the requirements, so if there is significant ambiguity or room for interpretation, err on the side of responding with "yes".'
       },
       { role: "user", content: prompt },
     ],
-    temperature: 0.8, // TODO: Figure out the ideal temperature
+    temperature: 1.0,
   },
 })
 
 if (aiRes.error) {
-  throw Error(`RETRYABLE Twitter HTTP Error ${aiRes.code}`)
+  throw Error(`RETRYABLE AI API HTTP Error ${aiRes.status}`)
 }
 
 const aiData = aiRes.data?.choices?.[0]?.message?.content
@@ -127,23 +164,9 @@ if (aiData.toLowerCase().includes('yes')) {
   return new Uint8Array([1])
 }
 
-throw Error(`RETRYABLE Unexpected AI response neither yes nor no`)
+throw Error(`RETRYABLE Unexpected AI response neither yes or no`)
 
 // Library functions
-function insertUrls(tweetText, entities) {
-  const urlEntities = entities?.urls
-  if (!urlEntities) return tweetText
-  let updatedText = tweetText
-  urlEntities.sort((a, b) => b.start - a.start)
-  for (const urlEntity of urlEntities) {
-      const { start, end, expanded_url } = urlEntity
-      const shortenedUrl = tweetText.slice(start, end)
-      const fullUrlWithoutPrefix = expanded_url.replace(/^(https?:\/\/)/, '')
-      updatedText = updatedText.replace(shortenedUrl, fullUrlWithoutPrefix)
-  }
-  return updatedText
-}
-
 async function encrypt(data, encryptionKey) {
   const encoder = new TextEncoder()
   const dataBytes = encoder.encode(data)
@@ -198,4 +221,15 @@ async function sha256(text) {
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
   return hashHex
+}
+
+function insertUrls(tweetText, entities) {
+  const urlEntities = entities?.urls
+  if (!urlEntities) return tweetText
+  let updatedText = tweetText
+  for (const urlEntity of urlEntities) {
+      const { url, expanded_url } = urlEntity
+      updatedText = updatedText.replace(url, expanded_url)
+  }
+  return updatedText
 }

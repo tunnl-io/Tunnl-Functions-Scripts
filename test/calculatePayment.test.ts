@@ -1,18 +1,12 @@
 import { simulateScript } from '@chainlink/functions-toolkit'
 import { readFileSync } from 'fs'
-import { encryptData, generateEncryptionKey, sha256 } from './util'
+import { encryptData } from './util'
 
 describe('calculatePayment', () => {
   it('should return a valid tweet', async () => {
     const tweetId = '1775352253227909340'
     const creationDateSeconds = 1
     const totalOfferValue = 100*10^6
-    const privateOfferData = {
-      createdAt: '1970-01-01T00:00:00.001Z',
-      creator_twitter_id: '1234567890',
-      required_likes: '1',
-      sponsorship_criteria: 'must be a good tweet',
-    }
     
     const key = process.env.ENCRYPTION_KEY!
     //const offerId = await sha256(JSON.stringify(privateOfferData))

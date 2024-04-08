@@ -8,7 +8,7 @@ const twitterReq = Functions.makeHttpRequest({
     Authorization: `Bearer ${secrets.twitterKey}`,
   },
   params: {
-    'tweet.fields': 'public_metrics,edit_controls',
+    'tweet.fields': 'public_metrics',
   },
   timeout: 9000,
 })
@@ -30,7 +30,7 @@ const backendReq = Functions.makeHttpRequest({
 const [ twitterRes, backendRes ] = await Promise.all([twitterReq, backendReq])
 
 if (backendRes.error) {
-  throw Error(`RETRYABLE Backend HTTP Error ${backendRes.code}`)
+  throw Error(`RETRYABLE Backend HTTP Error ${backendRes.status}`)
 }
 
 const encryptedOfferData = backendRes.data?.data
@@ -41,12 +41,16 @@ if (!encryptedOfferData) {
 
 let offerData
 try {
-  offerData = JSON.parse(await decrypt(encryptedOfferData, secrets.key))
+  offerData = await decrypt(encryptedOfferData, secrets.key)
 } catch (e) {
-  throw Error(`Failed to decrypt & parse offer data`)
+  throw Error(`Failed to decrypt offer data`)
+}
+try {
+  offerData = JSON.parse(offerData)
+} catch (e) {
+  throw Error(`Failed to parse offer data`)
 }
 
-// TODO: Replace with actual data from backend (ensure to validate the response first)
 const offerDataToHash = {
   createdAt: offerData.createdAt,
   creator_twitter_id: offerData.creator_twitter_id,
@@ -61,7 +65,7 @@ if (offerDataHash !== offerId) {
 }
 
 if (twitterRes.error) {
-  throw Error(`RETRYABLE Twitter HTTP Error ${twitterRes.code}`)
+  throw Error(`RETRYABLE Twitter HTTP Error ${twitterRes.status}`)
 }
 
 if (twitterRes.data?.errors) {
@@ -73,9 +77,7 @@ if (!twitterRes.data?.data) {
 }
 const tweetData = twitterRes.data?.data
 
-console.log(tweetData)
-
-if (!tweetData.public_metrics?.like_count) {
+if (!tweetData.public_metrics?.like_count && tweetData.public_metrics?.like_count !== 0) {
   throw Error(`No like_count in API response`)
 }
 const likeCount = BigInt(tweetData.public_metrics.like_count)

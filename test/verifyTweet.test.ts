@@ -4,18 +4,13 @@ import { encryptData, generateEncryptionKey, sha256 } from './util'
 
 describe('verifyTweet', () => {
   it('should return a valid tweet', async () => {
-    const tweetId = '1747817467391402362'
-    const privateOfferData = {
-      createdAt: new Date(1),
-      creator_twitter_id: '1644137470898962433',
-      required_likes: '1',
-      sponsorship_criteria: 'The tweet must talk about the Chainlink Functions Playground and promote it to javascript developers.',
-    }
-    const offerId = await sha256(JSON.stringify(privateOfferData))
-
-    const key = generateEncryptionKey()
+    const tweetId = '2775352253227909340'
     const creationDateSeconds = 1
     const totalOfferValue = 100*10^6
+    
+    const key = process.env.ENCRYPTION_KEY!
+    //const offerId = await sha256(JSON.stringify(privateOfferData))
+    const offerId = "0d77bd85516ffdd20c76c6092aa433801dda153c83d0282bdd63884131d8a2c8"
 
     const result = await simulateScript({
       source: readFileSync('./src/verifyTweet.js', 'utf8'),
