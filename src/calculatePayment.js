@@ -1,6 +1,6 @@
 const offerId = args[0]
 const tweetId = await decrypt(args[1], secrets.key)
-const maxPayment = BigInt(`0x${args[3]}`)
+const payment = BigInt(`0x${args[3]}`)
 
 const twitterReq = Functions.makeHttpRequest({
   url: `https://api.twitter.com/2/tweets/${tweetId}`,
@@ -8,7 +8,7 @@ const twitterReq = Functions.makeHttpRequest({
     Authorization: `Bearer ${secrets.twitterKey}`,
   },
   params: {
-    'tweet.fields': 'public_metrics',
+    'tweet.fields': 'created_at',
   },
   timeout: 9000,
 })
@@ -16,7 +16,7 @@ const twitterReq = Functions.makeHttpRequest({
 const encryptedData = await encrypt(JSON.stringify({ offerId: `0x${offerId}` }), secrets.key)
 
 const backendReq = Functions.makeHttpRequest({
-  url: `https://tunnl-io-frontend.vercel.app/api/offer/getOfferData`,
+  url: `https://tunnl-io-testnet.vercel.app/api/offer/getOfferData`,
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ const backendReq = Functions.makeHttpRequest({
 const [ twitterRes, backendRes ] = await Promise.all([twitterReq, backendReq])
 
 if (backendRes.error) {
-  throw Error(`RETRYABLE Backend HTTP Error ${backendRes.status}`)
+  throw Error(`RETRYABLE Backend Error ${backendRes.status ?? ''}`)
 }
 
 const encryptedOfferData = backendRes.data?.data
@@ -58,33 +58,33 @@ const offerDataToHash = {
   sponsorship_criteria: offerData.sponsorship_criteria,
 }
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
-const requiredLikes = BigInt(offerData.required_likes)
 
 if (offerDataHash !== offerId) {
   throw Error(`Offer data hash mismatch`)
 }
 
 if (twitterRes.error) {
-  throw Error(`RETRYABLE Twitter HTTP Error ${twitterRes.status}`)
+  throw Error(`RETRYABLE Twitter Error ${twitterRes.status ?? ''}`)
 }
 
 if (twitterRes.data?.errors) {
-  throw Error(`API Error ${twitterRes.data?.errors?.[0]?.title}`)
+  throw Error(`Twitter Error ${twitterRes.data?.errors?.[0]?.title}`)
 }
 
 if (!twitterRes.data?.data) {
   throw Error(`Unexpected API Response`)
 }
-const tweetData = twitterRes.data?.data
+const tweetData = twitterRes.data.data
 
-if (!tweetData.public_metrics?.like_count && tweetData.public_metrics?.like_count !== 0) {
-  throw Error(`No like_count in API response`)
+if (!tweetData.created_at) {
+  throw Error(`Tweet has no creation date`)
 }
-const likeCount = BigInt(tweetData.public_metrics.like_count)
 
-const payment = likeCount >= requiredLikes
-  ? maxPayment
-  : (likeCount * maxPayment) / requiredLikes
+const postDateSeconds = BigInt(Math.floor(Date.parse(tweetData.created_at) / 1000))
+
+if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - BigInt(60 * 60 * 24 * 3)) {
+  throw Error(`Tweet was posted less than 3 days ago`)
+}
 
 return Functions.encodeUint256(payment)
 

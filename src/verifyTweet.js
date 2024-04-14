@@ -16,7 +16,7 @@ const twitterReq = Functions.makeHttpRequest({
 const encryptedData = await encrypt(JSON.stringify({ offerId: `0x${offerId}` }), secrets.key)
 
 const backendReq = Functions.makeHttpRequest({
-  url: `https://tunnl-io-frontend.vercel.app/api/offer/getOfferData`,
+  url: `https://tunnl-io-testnet.vercel.app/api/offer/getOfferData`,
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ const backendReq = Functions.makeHttpRequest({
 const [ twitterRes, backendRes ] = await Promise.all([twitterReq, backendReq])
 
 if (backendRes.error) {
-  throw Error(`RETRYABLE Backend HTTP Error ${backendRes.status}`)
+  throw Error(`RETRYABLE Backend Error ${backendRes.status ?? ''}`)
 }
 
 const encryptedOfferData = backendRes.data?.data
@@ -58,14 +58,13 @@ const offerDataToHash = {
   sponsorship_criteria: offerData.sponsorship_criteria,
 }
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
-const requiredLikes = BigInt(offerData.required_likes)
 
 if (offerDataHash !== offerId) {
   throw Error(`Offer data hash mismatch`)
 }
 
 if (twitterRes.error) {
-  throw Error(`RETRYABLE Twitter HTTP Error ${twitterRes.status}`)
+  throw Error(`RETRYABLE Twitter Error ${twitterRes.status ?? ''}`)
 }
 
 if (twitterRes.data?.errors) {
@@ -75,7 +74,7 @@ if (twitterRes.data?.errors) {
 if (!twitterRes.data?.data) {
   throw Error(`Unexpected API Response`)
 }
-const tweetData = twitterRes.data?.data
+const tweetData = twitterRes.data.data
 
 if (!tweetData.author_id) {
   throw Error(`Tweet has no author ID`)
@@ -95,8 +94,8 @@ if (postDateSeconds < creationDateSeconds) {
   throw Error(`Tweet was posted before offer creation date`)
 }
 
-if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - BigInt(60 * 30)) {
-  throw Error(`Tweet was posted less than 30 minutes ago`)
+if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - BigInt(60 * 60)) {
+  throw Error(`Tweet was posted less than 1 hour ago`)
 }
 
 if (!tweetData.edit_history_tweet_ids) {
@@ -115,17 +114,17 @@ const repliedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type
 
 const prompt = `The requirements are:\n"${
   offerData.sponsorship_criteria
-}"\n\n${
+}"\n\nThe post text is:\n"${
+  tweetText
+}"${
   quotedTweetId?.length > 0
-    ? `The post quoted and reposted another post with an id of ${quotedTweetId[0]}.\n`
+    ? `\nThe post quoted/reposted another post with an id of ${quotedTweetId[0]}.`
     : ''
 }${
   repliedTweetId?.length > 0
-    ? `The post was a reply to a post with an id of ${repliedTweetId[0]}.\n`
+    ? `\nThe post was a reply to a post with an id of ${repliedTweetId[0]}.`
     : ''
-}The post text is:\n"${
-  tweetText
-}".\n\nDo you think the tweet meets the requirements?`
+}\n\nDo you think the tweet meets the requirements?`
 
 const aiRes = await Functions.makeHttpRequest({
   url: "https://api.openai.com/v1/chat/completions",
@@ -148,7 +147,7 @@ const aiRes = await Functions.makeHttpRequest({
 })
 
 if (aiRes.error) {
-  throw Error(`RETRYABLE AI API HTTP Error ${aiRes.status}`)
+  throw Error(`RETRYABLE AI Error ${aiRes.status ?? ''}`)
 }
 
 const aiData = aiRes.data?.choices?.[0]?.message?.content
