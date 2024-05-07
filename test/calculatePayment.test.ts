@@ -1,21 +1,23 @@
 import { simulateScript } from '@chainlink/functions-toolkit'
 import { readFileSync } from 'fs'
-import { encryptData, generateEncryptionKey, sha256 } from './util'
+import { encryptData } from './util'
+
+import { config as envEncConfig } from '@chainlink/env-enc'
+envEncConfig({
+  path: process.env.stage === 'mainnet'
+  ? '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet'
+  : '/Volumes/TUNNL/encryptedEnvVars/.env.enc.testnet'
+});
 
 describe('calculatePayment', () => {
   it('should return a valid tweet', async () => {
-    const tweetId = '1464720064729526277'
+    const tweetId = '1779228655102689593'
     const creationDateSeconds = 1
     const totalOfferValue = 100*10^6
-    const privateOfferData = {
-      createdAt: '1970-01-01T00:00:00.001Z',
-      creator_twitter_id: '1234567890',
-      required_likes: '1',
-      sponsorship_criteria: 'must be a good tweet',
-    }
     
-    const key = generateEncryptionKey()
-    const offerId = await sha256(JSON.stringify(privateOfferData))
+    const key = process.env.KEY_STRING!
+    //const offerId = await sha256(JSON.stringify(privateOfferData))
+    const offerId = "78fe27641fb36d00fa86a2a60c0cc13c71a8eaef9570d348d265368d26d815bf"
 
     const result = await simulateScript({
       source: readFileSync('./src/calculatePayment.js', 'utf8'),
@@ -34,5 +36,5 @@ describe('calculatePayment', () => {
     console.log(result.capturedTerminalOutput)
     expect(result.responseBytesHexstring).toBeTruthy()
     expect(BigInt(result.responseBytesHexstring!).toString()).toBe(BigInt(totalOfferValue).toString())
-  })
+  }, 12000)
 })
