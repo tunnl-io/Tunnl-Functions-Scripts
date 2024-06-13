@@ -4,14 +4,15 @@ const offerDurationSeconds = BigInt(`0x${args[3]}`)
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
-  url: `http://localhost:3000/api/offer/getOfferData`, // TODO: @Lord-Jerry you can choose a different URL if you want.
+  url: `
+  https://seashell-app-npeyj.ondigitalocean.app/internal/fetch-offer-for-chainlink-function`, // TODO: @Lord-Jerry you can choose a different URL if you want.
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
+    'api-key': secrets.apiKey,
   },
   data: {
-    // To further protect backend, the payload is encrypted w/ shared key
-    encryptedData: await encrypt(JSON.stringify({ offerId: `0x${offerId}` }), secrets.key),
+    offerId: `0x${offerId}`,
   },
   timeout: 4000,
 })
@@ -19,29 +20,16 @@ if (backendRes.error) {
   throw Error(`Backend Error ${backendRes.status ?? ''}`)
 }
 
-// Decrypt & parse response data
-const encryptedOfferData = backendRes.data?.data
-if (!encryptedOfferData) {
+const offerData = backendRes.data
+if (!offerData) {
   throw Error(`No offer data found`)
 }
-let offerData
-try {
-  offerData = await decrypt(encryptedOfferData, secrets.key)
-} catch (e) {
-  throw Error(`Failed to decrypt offer data`)
-}
-try {
-  offerData = JSON.parse(offerData)
-} catch (e) {
-  throw Error(`Failed to parse offer data`)
-}
 
-// TODO: Payload structure needs to be updated to match @Lord-Jerry 's implementation in the backend
 const offerDataToHash = {
   createdAt: offerData.createdAt,
   creator_twitter_id: offerData.creator_twitter_id,
   required_likes: offerData.required_likes,
-  sponsorship_criteria: offerData.sponsorship_criteria,
+  sponsorship_criteria: offerData.requirements,
 }
 // Verify the integrity of the offer data by ensuring the private data SHA256 hash matches the offerId
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
@@ -90,53 +78,6 @@ if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - (offerDurationSeco
 return Functions.encodeUint256(payment)
 
 // Library functions
-
-async function encrypt(data, encryptionKey) {
-  const encoder = new TextEncoder()
-  const dataBytes = encoder.encode(data)
-  const keyBytes = hexToUint8Array(encryptionKey)
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyBytes,
-    { name: "AES-CBC" },
-    false,
-    ["encrypt"]
-  )
-  const iv = crypto.getRandomValues(new Uint8Array(16))
-  const encryptedData = await crypto.subtle.encrypt(
-    { name: "AES-CBC", iv },
-    key,
-    dataBytes
-  )
-  const encryptedBytes = new Uint8Array(iv.length + encryptedData.byteLength)
-  encryptedBytes.set(iv)
-  encryptedBytes.set(new Uint8Array(encryptedData), iv.length)
-  return Array.from(encryptedBytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
-}
-
-async function decrypt(encryptedData, encryptionKey) {
-  const decoder = new TextDecoder()
-  const iv = hexToUint8Array(encryptedData.slice(0, 32))
-  const data = hexToUint8Array(encryptedData.slice(32))
-  const keyBytes = hexToUint8Array(encryptionKey)
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyBytes,
-    { name: "AES-CBC" },
-    false,
-    ["decrypt"]
-  )
-  const decryptedData = await crypto.subtle.decrypt(
-    { name: "AES-CBC", iv },
-    key,
-    data
-  )
-  return decoder.decode(decryptedData)
-}
-
-function hexToUint8Array(hexString) {
-  return new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
-}
 
 async function sha256(text) {
   const encoder = new TextEncoder()

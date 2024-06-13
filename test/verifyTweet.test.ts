@@ -17,7 +17,7 @@ describe('verifyTweet', () => {
     
     const key = process.env.KEY_STRING!
     //const offerId = await sha256(JSON.stringify(privateOfferData))
-    const offerId = "da4e7c830d6d5e6cbddff9d36a9a7393a4b9f0947d4714ab3d1385c90a8924ff"
+    const offerId = "f8dde30c0d8e0d39548bd76a6db398d8a266866167e9ecbca6d0ff552717830d"
 
     const result = await simulateScript({
       source: readFileSync('./src/verifyTweet.js', 'utf8'),
@@ -30,7 +30,7 @@ describe('verifyTweet', () => {
       secrets: {
         twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
         openAiKey: process.env.OPENAI_API_KEY!,
-        key,
+        apiKey: process.env.API_KEY!,
       },
     })
     console.log(result.errorString)
