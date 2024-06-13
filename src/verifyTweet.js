@@ -26,7 +26,7 @@ if (!offerData) {
 }
 
 const offerDataToHash = {
-  createdAt: offerData.createdAt,
+  salt: offerData.salt,
   creator_twitter_id: offerData.creator_twitter_id,
   required_likes: offerData.required_likes,
   sponsorship_criteria: offerData.requirements,
@@ -136,7 +136,6 @@ const aiRes = await Functions.makeHttpRequest({
 })
 
 if (aiRes.error) {
-  console.log(aiRes)
   throw Error(`AI Error ${aiRes.status ?? ''}`)
 }
 
