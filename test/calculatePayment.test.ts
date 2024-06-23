@@ -1,6 +1,5 @@
 import { simulateScript } from '@chainlink/functions-toolkit'
 import { readFileSync } from 'fs'
-import { encryptData } from './util'
 
 import { config as envEncConfig } from '@chainlink/env-enc'
 envEncConfig({
@@ -15,12 +14,10 @@ describe('calculatePayment', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const key = process.env.KEY_STRING!
-    //const offerId = await sha256(JSON.stringify(privateOfferData))
-    const offerId = "a0d4254cbd4d60adfc9bbd169e89594dcaccdd789333a0f1acb12495282e6531"
+    const offerId = "18405027ea7df2505bec0e069dd57e3b07c51ce1b851515e5fe8cd29a828829e"
 
     const result = await simulateScript({
-      source: readFileSync('./src/calculatePayment.js', 'utf8'),
+      source: readFileSync('./src/fetchPaymentScript.js', 'utf8'),
       args: [
         offerId,
         creationDateSeconds.toString(16),
@@ -28,6 +25,7 @@ describe('calculatePayment', () => {
         offerDuration.toString(16),
       ],
       secrets: {
+        payScriptUrl: process.env.PAY_SCRIPT_URL!,
         twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
         apiKey: process.env.API_KEY!,
       },
