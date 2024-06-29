@@ -1,6 +1,5 @@
 import { simulateScript } from '@chainlink/functions-toolkit'
 import { readFileSync } from 'fs'
-import { encryptData, generateEncryptionKey, sha256 } from './util'
 
 import { config as envEncConfig } from '@chainlink/env-enc'
 envEncConfig({
@@ -15,12 +14,10 @@ describe('verifyTweet', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const key = process.env.KEY_STRING!
-    //const offerId = await sha256(JSON.stringify(privateOfferData))
-    const offerId = "a0d4254cbd4d60adfc9bbd169e89594dcaccdd789333a0f1acb12495282e6531"
+    const offerId = "34e98beb3677627b6583bcaeadea1bcc65b02ca1b7ca63c9ce7c4a3aee5e1d2f"
 
     const result = await simulateScript({
-      source: readFileSync('./src/verifyTweet.js', 'utf8'),
+      source: readFileSync('./src/fetchVerifyScript.js', 'utf8'),
       args: [
         offerId,
         creationDateSeconds.toString(16),
@@ -28,6 +25,7 @@ describe('verifyTweet', () => {
         offerDuration.toString(16),
       ],
       secrets: {
+        verifyScriptUrl: process.env.VERIFY_SCRIPT_URL!,
         twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
         openAiKey: process.env.OPENAI_API_KEY!,
         apiKey: process.env.API_KEY!,
