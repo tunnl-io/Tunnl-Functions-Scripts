@@ -23,7 +23,7 @@ const sha256 = async (text: string) => {
   const verifyScriptString = readFileSync('./src/verifyTweet.js', 'utf8')
   const verifyScriptHash = await sha256(verifyScriptString)
   console.log('\nverifyTweet script hash to set in contract config:', verifyScriptHash)
-  const verifyScriptGistUrl = await createGist(process.env.GITHUB_TOKEN!, verifyScriptHash)
+  const verifyScriptGistUrl = await createGist(process.env.GITHUB_TOKEN!, verifyScriptString)
   console.log('verifyTweet script uploaded to:', verifyScriptGistUrl)
   process.env.VERIFY_SCRIPT_URL = verifyScriptGistUrl
   const payScriptString = readFileSync('./src/calculatePayment.js', 'utf8')
@@ -44,13 +44,15 @@ const sha256 = async (text: string) => {
   })
   await secretsManager.initialize()
 
-  const encryptedSecrets = await secretsManager.encryptSecrets({
+  const secrets = {
     twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
     openAiKey: process.env.OPENAI_API_KEY!,
     apiKey: process.env.API_KEY!,
     verifyScriptUrl: process.env.VERIFY_SCRIPT_URL!,
     payScriptUrl: process.env.PAY_SCRIPT_URL!,
-  })
+  }
+  console.log('\nSecrets to encrypt:', secrets)
+  const encryptedSecrets = await secretsManager.encryptSecrets(secrets)
   const gistUrl = await createGist(process.env.GITHUB_TOKEN!, JSON.stringify(encryptedSecrets))
   console.log('\nEncrypted secrets:', gistUrl)
   const encryptedSecretsReference = await secretsManager.encryptSecretsUrls([gistUrl])
