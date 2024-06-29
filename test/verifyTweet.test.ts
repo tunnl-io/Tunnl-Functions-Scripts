@@ -18,11 +18,11 @@ describe('verifyTweet', () => {
 
     const result = await simulateScript({
       source: readFileSync('./src/fetchVerifyScript.js', 'utf8'),
-      args: [
-        offerId,
-        creationDateSeconds.toString(16),
-        totalOfferValue.toString(16),
-        offerDuration.toString(16),
+      bytesArgs: [
+        `0x${offerId}`,
+        `0x${creationDateSeconds.toString(16)}`,
+        `0x${totalOfferValue.toString(16)}`,
+        `0x${offerDuration.toString(16)}`,
       ],
       secrets: {
         verifyScriptUrl: process.env.VERIFY_SCRIPT_URL!,

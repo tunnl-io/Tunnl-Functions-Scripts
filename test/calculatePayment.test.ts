@@ -18,11 +18,11 @@ describe('calculatePayment', () => {
 
     const result = await simulateScript({
       source: readFileSync('./src/fetchPaymentScript.js', 'utf8'),
-      args: [
-        offerId,
-        creationDateSeconds.toString(16),
-        totalOfferValue.toString(16),
-        offerDuration.toString(16),
+      bytesArgs: [
+        `0x${offerId}`,
+        `0x${creationDateSeconds.toString(16)}`,
+        `0x${totalOfferValue.toString(16)}`,
+        `0x${offerDuration.toString(16)}`,
       ],
       secrets: {
         payScriptUrl: process.env.PAY_SCRIPT_URL!,

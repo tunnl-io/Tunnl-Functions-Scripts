@@ -1,6 +1,6 @@
-const offerId = args[0]
-const creationDateSeconds = BigInt(args[1])
-const offerDurationSeconds = BigInt(`0x${args[3]}`)
+const offerId = bytesArgs[0]
+const creationDateSeconds = BigInt(bytesArgs[1])
+const offerDurationSeconds = BigInt(bytesArgs[3])
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
@@ -12,7 +12,7 @@ const backendRes = await Functions.makeHttpRequest({
     'api-key': secrets.apiKey,
   },
   data: {
-    offerId: `0x${offerId}`,
+    offerId,
   },
   timeout: 4000,
 })
@@ -31,11 +31,10 @@ const offerDataToHash = {
   required_likes: offerData.required_likes,
   sponsorship_criteria: offerData.requirements,
 }
-
 // Verify the integrity of the offer data by ensuring the private data SHA256 hash matches the offerId
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
-if (offerDataHash !== offerId) {
-  throw Error(`Offer data hash mismatch`)
+if (`0x${offerDataHash}` !== offerId) {
+  throw Error(`Offer data hash mismatch 0x${offerDataHash} !== ${offerId}`)
 }
 
 const twitterRes = await Functions.makeHttpRequest({
