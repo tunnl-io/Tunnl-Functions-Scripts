@@ -22,6 +22,7 @@
   "dependencies": {
     "@chainlink/env-enc": "^1.0.5",
     "@chainlink/functions-toolkit": "^0.2.8",
+    "ethers": "^5.7.2",
     "open": "^10.1.0",
     "twitter-api-v2": "^1.16.1"
   }
