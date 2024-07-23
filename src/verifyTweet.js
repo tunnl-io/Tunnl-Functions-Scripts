@@ -4,8 +4,7 @@ const offerDurationSeconds = BigInt(bytesArgs[3])
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
-  url: `
-  https://seashell-app-npeyj.ondigitalocean.app/internal/fetch-offer-for-chainlink-function`,
+  url: secrets.backendUrl,
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -16,6 +15,7 @@ const backendRes = await Functions.makeHttpRequest({
   },
   timeout: 4000,
 })
+console.log(backendRes)
 if (backendRes.error) {
   throw Error(`Backend Error ${backendRes.status ?? ''}`)
 }
@@ -132,6 +132,7 @@ const aiRes = await Functions.makeHttpRequest({
     ],
     temperature: 0,
   },
+  timeout: 9000,
 })
 
 if (aiRes.error) {

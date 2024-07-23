@@ -2,6 +2,10 @@ import { SecretsManager, createGist } from "@chainlink/functions-toolkit";
 import { readFileSync } from "fs";
 // Note, you need to switch to the ethers v5.7.2 to run this script.
 import { ethers } from "ethers";
+import { config as envEncConfig } from '@chainlink/env-enc'
+envEncConfig({
+  path: '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet'
+});
 
 const sha256 = async (text: string) => {
   return Array.from(
@@ -34,8 +38,12 @@ const sha256 = async (text: string) => {
   process.env.PAY_SCRIPT_URL = payScriptGistUrl
 
   // Optimism Sepolia
-  const functionsRouterAddress = '0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28'
-  const donId = 'fun-optimism-sepolia-1'
+  // const functionsRouterAddress = '0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28'
+  // const donId = 'fun-optimism-sepolia-1'
+
+  // Base Mainnet
+  const functionsRouterAddress = '0xf9b8fc078197181c841c296c876945aaa425b278'
+  const donId = 'fun-base-mainnet-1'
 
   const secretsManager = new SecretsManager({
     signer,
@@ -45,6 +53,7 @@ const sha256 = async (text: string) => {
   await secretsManager.initialize()
 
   const secrets = {
+    backendUrl: process.env.BACKEND_URL!,
     twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
     openAiKey: process.env.OPENAI_API_KEY!,
     apiKey: process.env.API_KEY!,

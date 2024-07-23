@@ -1,0 +1,3 @@
+export const generateFetcherScript = (scriptHash, secretUrlField) => {
+  return `const s=(await Functions.makeHttpRequest({url:secrets.${secretUrlField},responseType:'text'})).data;if(Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))).map((b)=>b.toString(16).padStart(2,"0")).join("")!=='${scriptHash}'){throw Error('Script hash mismatch')};return eval(\`(async()=>{\${s}})()\`)`
+}
