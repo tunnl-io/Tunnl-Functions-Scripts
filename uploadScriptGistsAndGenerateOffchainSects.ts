@@ -35,13 +35,16 @@ const sha256 = async (text: string) => {
   const payScriptGistUrl = await createGist(process.env.GITHUB_TOKEN!, payScriptString)
   console.log('calculatePayment script uploaded to:', payScriptGistUrl)
 
-  // Optimism Sepolia
-  // const functionsRouterAddress = '0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28'
-  // const donId = 'fun-optimism-sepolia-1'
+  let functionsRouterAddress: string
+  let donId: string
 
-  // Base Mainnet
-  const functionsRouterAddress = '0xf9b8fc078197181c841c296c876945aaa425b278'
-  const donId = 'fun-base-mainnet-1'
+  if (process.env.STAGE === 'mainnet') {
+    functionsRouterAddress = '0xf9b8fc078197181c841c296c876945aaa425b278'
+    donId = 'fun-base-mainnet-1'
+  } else {
+    functionsRouterAddress = '0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28'
+    donId = 'fun-optimism-sepolia-1'
+  }
 
   const secretsManager = new SecretsManager({
     signer,

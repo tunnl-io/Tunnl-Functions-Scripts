@@ -15,7 +15,6 @@ const backendRes = await Functions.makeHttpRequest({
   },
   timeout: 4000,
 })
-console.log(backendRes)
 if (backendRes.error) {
   throw Error(`Backend Error ${backendRes.status ?? ''}`)
 }
