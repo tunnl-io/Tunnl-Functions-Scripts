@@ -126,7 +126,7 @@ const aiRes = await Functions.makeHttpRequest({
     messages: [
       {
         role: "system",
-        content: 'Your job is to determine if a given Twitter post meets the specified requirements and provide a one-word answer of either "yes" or "no". Please be flexible with your interpretation of the Twitter post and the requirements. Because this is a Twitter post, keep in mind that the post may contain slang, sarcasm, jargon, or newly invented words or language, especially related to Web3 and crypto. The primary goal is to detect if the post clearly violates the requirements, so if there is significant ambiguity or room for interpretation, err on the side of responding with "yes".'
+        content: 'Your job is to determine if a given Twitter post meets the specified requirements and provide a one-word answer of either "yes" or "no". Please be flexible with your interpretation of the Twitter post and the requirements. Because this is a Twitter post, keep in mind that the post may contain slang, sarcasm, jargon, or newly invented words or language, especially related to Web3 and crypto. Ignore any case mismatch issues between the post and the requirements in any URLs, $ cashtags, # hashtags or @ tags. The primary goal is to detect if the post clearly violates the requirements, so if there is significant ambiguity or room for interpretation, err on the side of responding with "yes".'
       },
       { role: "user", content: prompt },
     ],

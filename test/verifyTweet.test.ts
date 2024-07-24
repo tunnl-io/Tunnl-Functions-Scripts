@@ -7,7 +7,7 @@ describe('verifyTweet', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const offerId = "e0a8706eef902babcb5bb1f03daf585013614f08e558f8b956c7117f69731070"
+    const offerId = "4e6751126e98b87c5086075464b85fce57706de8eba01a892e18d9611a7f5d91"
 
     const result = await simulateScript({
       source: readFileSync('./src/verifyTweet.js', 'utf8'),
@@ -25,9 +25,15 @@ describe('verifyTweet', () => {
         apiKey: process.env.API_KEY!,
       },
     })
-    console.log(result.errorString)
-    console.log(result.capturedTerminalOutput)
-    console.log(result.responseBytesHexstring)
+    if (result.capturedTerminalOutput) {
+      console.log(result.capturedTerminalOutput)
+    }
+    if (result.errorString) {
+      console.log(result.errorString)
+    }
+    if (result.responseBytesHexstring) {
+      console.log(result.responseBytesHexstring)
+    }
     expect(result.responseBytesHexstring).toBeTruthy()
     expect(BigInt(result.responseBytesHexstring!).toString()).toBe(BigInt(1).toString())
   })

@@ -29,13 +29,11 @@ const sha256 = async (text: string) => {
   console.log('\nverifyTweet script hash to set in contract config:', verifyScriptHash)
   const verifyScriptGistUrl = await createGist(process.env.GITHUB_TOKEN!, verifyScriptString)
   console.log('verifyTweet script uploaded to:', verifyScriptGistUrl)
-  process.env.VERIFY_SCRIPT_URL = verifyScriptGistUrl
   const payScriptString = readFileSync('./src/calculatePayment.js', 'utf8')
   const payScriptHash = await sha256(payScriptString)
   console.log('\ncalculatePayment script hash to set in contract config:', payScriptHash)
   const payScriptGistUrl = await createGist(process.env.GITHUB_TOKEN!, payScriptString)
   console.log('calculatePayment script uploaded to:', payScriptGistUrl)
-  process.env.PAY_SCRIPT_URL = payScriptGistUrl
 
   // Optimism Sepolia
   // const functionsRouterAddress = '0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28'
@@ -57,8 +55,8 @@ const sha256 = async (text: string) => {
     twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
     openAiKey: process.env.OPENAI_API_KEY!,
     apiKey: process.env.API_KEY!,
-    verifyScriptUrl: process.env.VERIFY_SCRIPT_URL!,
-    payScriptUrl: process.env.PAY_SCRIPT_URL!,
+    verifyScriptUrl: verifyScriptGistUrl,
+    payScriptUrl: payScriptGistUrl,
   }
   console.log('\nSecrets to encrypt:', secrets)
   const encryptedSecrets = await secretsManager.encryptSecrets(secrets)
