@@ -3,8 +3,11 @@ import { readFileSync } from "fs";
 // Note, you need to switch to the ethers v5.7.2 to run this script.
 import { ethers } from "ethers";
 import { config as envEncConfig } from '@chainlink/env-enc'
+
+const isMainnet = process.env.STAGE === 'mainnet'
+
 envEncConfig({
-  path: '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet'
+  path: isMainnet ? '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet' : '/Volumes/TUNNL/encryptedEnvVars/.env.enc.testnet'
 });
 
 const sha256 = async (text: string) => {
@@ -28,22 +31,22 @@ const sha256 = async (text: string) => {
   const verifyScriptHash = await sha256(verifyScriptString)
   console.log('\nverifyTweet script hash to set in contract config:', verifyScriptHash)
   const verifyScriptGistUrl = await createGist(process.env.GITHUB_TOKEN!, verifyScriptString)
-  console.log('verifyTweet script uploaded to:', verifyScriptGistUrl)
   const payScriptString = readFileSync('./src/calculatePayment.js', 'utf8')
   const payScriptHash = await sha256(payScriptString)
   console.log('\ncalculatePayment script hash to set in contract config:', payScriptHash)
-  const payScriptGistUrl = await createGist(process.env.GITHUB_TOKEN!, payScriptString)
-  console.log('calculatePayment script uploaded to:', payScriptGistUrl)
+  const payScriptGistUrl = await createGist(process.env.GITHUB_TOKEN!, payScriptString) 
 
   let functionsRouterAddress: string
   let donId: string
-
-  if (process.env.STAGE === 'mainnet') {
+  let backendUrl: string
+  if (isMainnet) {
     functionsRouterAddress = '0xf9b8fc078197181c841c296c876945aaa425b278'
     donId = 'fun-base-mainnet-1'
+    backendUrl = 'https://api-tunnl-mainnet-6l3nt.ondigitalocean.app/internal/fetch-offer-for-chainlink-function'
   } else {
     functionsRouterAddress = '0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28'
     donId = 'fun-optimism-sepolia-1'
+    backendUrl = 'https://seashell-app-npeyj.ondigitalocean.app/internal/fetch-offer-for-chainlink-function'
   }
 
   const secretsManager = new SecretsManager({
@@ -54,7 +57,7 @@ const sha256 = async (text: string) => {
   await secretsManager.initialize()
 
   const secrets = {
-    backendUrl: process.env.BACKEND_URL!,
+    backendUrl,
     twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
     openAiKey: process.env.OPENAI_API_KEY!,
     apiKey: process.env.API_KEY!,
