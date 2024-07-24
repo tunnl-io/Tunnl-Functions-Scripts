@@ -4,8 +4,7 @@ const offerDurationSeconds = BigInt(bytesArgs[3])
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
-  url: `
-  https://seashell-app-npeyj.ondigitalocean.app/internal/fetch-offer-for-chainlink-function`, // TODO: @Lord-Jerry you can choose a different URL if you want.
+  url: secrets.backendUrl,
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
