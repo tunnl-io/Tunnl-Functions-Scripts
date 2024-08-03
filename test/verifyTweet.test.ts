@@ -20,7 +20,7 @@ describe('verifyTweet', () => {
       secrets: {
         backendUrl: process.env.BACKEND_URL!,
         verifyScriptUrl: process.env.VERIFY_SCRIPT_URL!,
-        twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
+        twitterKey: process.env.TWITTER_API_BEARER_TOKEN_2!,
         openAiKey: process.env.OPENAI_API_KEY!,
         apiKey: process.env.API_KEY!,
       },

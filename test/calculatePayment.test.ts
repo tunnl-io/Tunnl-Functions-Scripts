@@ -27,7 +27,7 @@ describe('calculatePayment', () => {
       secrets: {
         backendUrl: process.env.BACKEND_URL!,
         payScriptUrl: process.env.PAY_SCRIPT_URL!,
-        twitterKey: process.env.TWITTER_API_BEARER_TOKEN!,
+        twitterKey: process.env.TWITTER_API_BEARER_TOKEN_2!,
         apiKey: process.env.API_KEY!,
       },
     })
