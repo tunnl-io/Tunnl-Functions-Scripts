@@ -90,6 +90,13 @@ if (tweetData.edit_history_tweet_ids.length > 1) {
   throw Error(`Tweet has been edited`)
 }
 
+// Instructions Prompt
+const content = `Your job is to determine if a user's Twitter post meets the specified requirements. 
+Provide a one-word answer: either "Yes" if the post meets all requirements or "No" if it does not.
+Be flexible with your interpretation, considering the nature of Twitter posts, which may contain slang, sarcasm, jargon, or new language, especially related to Web3, blockchain and crypto. 
+Ignore case mismatch issues unless explicitly specified. 
+Assume a positive intent of the user to meet the requirements and interpret the post generously, unless there is a clear and explicit violation of the requirements.`
+
 // Insert full URLs into tweet text
 const tweetText = tweetData.note_tweet?.text
   ? insertUrls(tweetData.note_tweet.text, tweetData.note_tweet.entities)
@@ -100,8 +107,8 @@ const repliedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type
 
 // Verify the post meets the requirements
 const prompt = `The requirements are:\n"${
-  offerData.sponsorship_criteria
-}"\n\nThe post text is:\n"${
+  offerData.requirements
+}"\n\nThe user's post text is:\n"${
   tweetText
 }"${
   quotedTweetId?.length > 0
@@ -125,7 +132,7 @@ const aiRes = await Functions.makeHttpRequest({
     messages: [
       {
         role: "system",
-        content: 'Your job is to determine if a given Twitter post meets the specified requirements and provide a one-word answer of either "yes" or "no". Please be flexible with your interpretation of the Twitter post and the requirements. Because this is a Twitter post, keep in mind that the post may contain slang, sarcasm, jargon, or newly invented words or language, especially related to Web3 and crypto. Ignore any case mismatch issues between the post and the requirements in any URLs, $ cashtags, # hashtags or @ tags. If there is ambiguity or room for interpretation, err on the side of responding with "yes" unless there is an obvious violation of the requirements.'
+        content,
       },
       { role: "user", content: prompt },
     ],
