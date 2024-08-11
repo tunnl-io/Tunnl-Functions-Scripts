@@ -2,32 +2,39 @@ import { SecretsManager, createGist } from "@chainlink/functions-toolkit";
 import { readFileSync } from "fs";
 // Note, you need to switch to the ethers v5.7.2 to run this script.
 import { ethers } from "ethers";
-import { config as envEncConfig } from '@chainlink/env-enc'
+require('dotenv').config();
+import crypto from 'crypto';
+// import { config as envEncConfig } from '@chainlink/env-enc'
 
+console.log('privateKey: ', process.env.PRIVATE_KEY)
+console.log('rpcUrl: ', process.env.RPC_URL)
 const isMainnet = process.env.STAGE === 'mainnet'
 
 console.log(isMainnet ? 'Mainnet' : 'Testnet')
 
-envEncConfig({
-  path: isMainnet ? '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet' : '/Volumes/TUNNL/encryptedEnvVars/.env.enc.testnet'
-});
+// envEncConfig({
+//   path: isMainnet ? '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet' : '/Volumes/TUNNL/encryptedEnvVars/.env.enc.testnet'
+// });
+
+// const sha256 = async (text: string) => {
+//   return Array.from(
+//     new Uint8Array(
+//       await crypto.subtle.digest(
+//         "SHA-256",
+//         new TextEncoder().encode(text)
+//       )
+//     )).map(
+//       (b)=>b.toString(16).padStart(2,"0")
+//     ).join("")
+// }
 
 const sha256 = async (text: string) => {
-  return Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(text)
-      )
-    )).map(
-      (b)=>b.toString(16).padStart(2,"0")
-    ).join("")
+  return crypto.createHash('sha256').update(text).digest('hex');
 }
 
 (async () => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
   const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-
   // Upload scripts to Gists & generate hashes
   const verifyScriptString = readFileSync('./src/verifyTweet.js', 'utf8')
   const verifyScriptHash = await sha256(verifyScriptString)
@@ -46,8 +53,8 @@ const sha256 = async (text: string) => {
     donId = 'fun-base-mainnet-1'
     backendUrl = 'https://api-tunnl-mainnet-6l3nt.ondigitalocean.app/internal/fetch-offer-for-chainlink-function'
   } else {
-    functionsRouterAddress = '0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28'
-    donId = 'fun-optimism-sepolia-1'
+    functionsRouterAddress = '0xf9B8fc078197181C841c296C876945aaa425B278'
+    donId = 'fun-base-sepolia-1'
     backendUrl = 'https://seashell-app-npeyj.ondigitalocean.app/internal/fetch-offer-for-chainlink-function'
   }
 
