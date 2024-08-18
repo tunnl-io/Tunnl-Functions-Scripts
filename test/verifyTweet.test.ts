@@ -7,7 +7,7 @@ describe('verifyTweet', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const offerId = "8d5aafbd73a5473e017f309f7bad1efd8d88400dc5d3360e1a2e75d879555c3d"
+    const offerId = "2fa86300caaaf3fba7cba3f6aca4d74ac62652b09261ac7cb126cfe55d273852" //"aaee17783f30f0cea00845f0b92f695e08ab5a42023496bf359a6d963ba271fa"// Acces misspelling "0abe76cb25c730486f8079cf629d8f9ae38857a2b78e9762d19c117b94ea8ca5"
 
     const result = await simulateScript({
       source: readFileSync('./src/verifyTweet.js', 'utf8'),
@@ -24,6 +24,7 @@ describe('verifyTweet', () => {
         openAiKey: process.env.OPENAI_API_KEY!,
         apiKey: process.env.API_KEY!,
       },
+      maxQueryRequestBytes: 10000,
     })
     if (result.capturedTerminalOutput) {
       console.log(result.capturedTerminalOutput)
