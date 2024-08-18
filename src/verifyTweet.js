@@ -91,11 +91,13 @@ if (tweetData.edit_history_tweet_ids.length > 1) {
 }
 
 // Instructions Prompt
-const content = `Your job is to determine if a user's Twitter post meets the specified requirements. 
+const content = `Your job is to determine if a user's Twitter post meets the specified requirements.
 Provide a one-word answer: either "Yes" if the post meets all requirements or "No" if it does not.
-Be flexible with your interpretation, considering the nature of Twitter posts, which may contain slang, sarcasm, jargon, or new language, especially related to Web3, blockchain and crypto. 
-Ignore case mismatch issues unless explicitly specified. 
-Assume a positive intent of the user to meet the requirements and interpret the post generously, unless there is a clear and explicit violation of the requirements.`
+Be flexible with your interpretation, considering the nature of Twitter posts, which may contain slang, sarcasm, jargon, or new language, especially related to Web3, blockchain and crypto.
+Ignore case mismatch issues unless explicitly specified.
+The requirements may explicitly state that the post must reply to or quote a specific post referenced via URL (the post ID is contained within the URL).
+Unless explicitly specified, the post cannot be a reply to another post. However, unless otherwise specified, it can quote another post. If the post is a reply or quotes another post, you will be given the referenced post ID.
+Assume a positive intent of the user to meet the requirements and interpret the post generously, unless there is a clear violation of the requirements.`
 
 // Insert full URLs into tweet text
 const tweetText = tweetData.note_tweet?.text
@@ -106,19 +108,19 @@ const quotedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type 
 const repliedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type === 'replied_to').map((tweet) => tweet.id)
 
 // Verify the post meets the requirements
-const prompt = `The requirements are:\n"${
+const prompt = `The requirements are:\n${
   offerData.requirements
-}"\n\nThe user's post text is:\n"${
+}\n\n\nThe user's post text is:\n${
   tweetText
-}"${
+}${
   quotedTweetId?.length > 0
-    ? `\nThe post quoted/reposted another post with an id of ${quotedTweetId[0]}.`
-    : ''
+    ? `\n\n\nThe post quoted another post with an ID of ${quotedTweetId[0]}.`
+    : '\n\n\nThe post did not quote another post.'
 }${
   repliedTweetId?.length > 0
-    ? `\nThe post was a reply to a post with an id of ${repliedTweetId[0]}.`
-    : ''
-}\n\nDo you think the tweet meets the requirements?`
+    ? `\nThe post was a reply to a post with an ID of ${repliedTweetId[0]}.`
+    : '\nThe post is not a reply to another post.'
+}\n\nDo you think the post meets the requirements?`
 
 const aiRes = await Functions.makeHttpRequest({
   url: "https://api.openai.com/v1/chat/completions",
