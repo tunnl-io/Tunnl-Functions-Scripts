@@ -7,7 +7,7 @@ describe('verifyTweet', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const offerId = "8d5aafbd73a5473e017f309f7bad1efd8d88400dc5d3360e1a2e75d879555c3d"
+    const offerId = "2e4b79dcbde919ddf2acb198f79cbf92cfae4c201b53aeebc74afc639a9c4801"
 
     const result = await simulateScript({
       source: readFileSync('./src/verifyTweet.js', 'utf8'),
