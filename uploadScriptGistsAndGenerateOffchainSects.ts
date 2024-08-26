@@ -3,14 +3,17 @@ import { readFileSync } from "fs";
 // Note, you need to switch to the ethers v5.7.2 to run this script.
 import { ethers } from "ethers";
 import { config as envEncConfig } from '@chainlink/env-enc'
+require('dotenv').config();
 
 const isMainnet = process.env.STAGE === 'mainnet'
 
 console.log(isMainnet ? 'Mainnet' : 'Testnet')
 
-envEncConfig({
-  path: isMainnet ? '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet' : '/Volumes/TUNNL/encryptedEnvVars/.env.enc.testnet'
-});
+if (process.env.USE_ENV_ENC?.toLowerCase() === 'true') {
+  envEncConfig({
+    path: isMainnet ? '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet' : '/Volumes/TUNNL/encryptedEnvVars/.env.enc.testnet'
+  });
+}
 
 const sha256 = async (text: string) => {
   return Array.from(
@@ -46,8 +49,8 @@ const sha256 = async (text: string) => {
     donId = 'fun-base-mainnet-1'
     backendUrl = 'https://api-tunnl-mainnet-6l3nt.ondigitalocean.app/internal/fetch-offer-for-chainlink-function'
   } else {
-    functionsRouterAddress = '0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28'
-    donId = 'fun-optimism-sepolia-1'
+    functionsRouterAddress = '0xf9B8fc078197181C841c296C876945aaa425B278'
+    donId = 'fun-base-sepolia-1'
     backendUrl = 'https://seashell-app-npeyj.ondigitalocean.app/internal/fetch-offer-for-chainlink-function'
   }
 
