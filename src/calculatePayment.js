@@ -64,11 +64,11 @@ if (!tweetData.created_at) {
   throw Error(`Tweet has no creation date`)
 }
 
-// The post must be live for offerDurationSeconds - 1 day
-// The reason we subtrack 1 day is the creator has 24 hours to make the post after 1st accepting the offer
+// The post must be live for offerDurationSeconds - 2 days
+// The reason we subtrack 2 days is the creator has 48 hours to make the post after 1st accepting the offer
 // (offer duration countdown does not start until after acceptance)
 const postDateSeconds = BigInt(Math.floor(Date.parse(tweetData.created_at) / 1000))
-if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - (offerDurationSeconds - BigInt(60 * 60 * 24))) {
+if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - (offerDurationSeconds - BigInt(60 * 60 * 48))) {
   throw Error(`Tweet was not live long enough`)
 }
 
