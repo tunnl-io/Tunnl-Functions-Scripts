@@ -1,4 +1,5 @@
 import { SecretsManager, createGist } from "@chainlink/functions-toolkit";
+import { LedgerSigner } from "@ethersproject/hardware-wallets";
 import { readFileSync } from "fs";
 // Note, you need to switch to the ethers v5.7.2 to run this script.
 import { ethers } from "ethers";
@@ -29,7 +30,7 @@ const sha256 = async (text: string) => {
 
 (async () => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
-  const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+  const signer = new LedgerSigner(provider, 'hid')
 
   // Upload scripts to Gists & generate hashes
   const verifyScriptString = readFileSync('./src/verifyTweet.js', 'utf8')

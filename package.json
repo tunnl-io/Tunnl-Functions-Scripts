@@ -22,6 +22,8 @@
   "dependencies": {
     "@chainlink/env-enc": "^1.0.5",
     "@chainlink/functions-toolkit": "^0.2.8",
+    "@ethersproject/hardware-wallets": "^5.7.0",
+    "@ledgerhq/hw-transport-node-hid": "^6.29.5",
     "dotenv": "^16.4.5",
     "ethers": "^5.7.2",
     "open": "^10.1.0",
