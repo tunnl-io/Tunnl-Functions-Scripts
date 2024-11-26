@@ -1,6 +1,5 @@
 const offerId = bytesArgs[0]
-const creationDateSeconds = BigInt(bytesArgs[1])
-const requiredPostLiveDurationSeconds = BigInt(bytesArgs[3])
+const requiredPostLiveDurationSeconds = BigInt(bytesArgs[1])
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
