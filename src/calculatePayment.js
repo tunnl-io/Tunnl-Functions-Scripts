@@ -69,7 +69,7 @@ if (!tweetData.created_at) {
 // The post must be live for the required duration
 const postDateSeconds = BigInt(Math.floor(Date.parse(tweetData.created_at) / 1000))
 const postLiveDurationSeconds = BigInt(Math.floor(Date.now() / 1000)) - postDateSeconds
-if (postLiveDurationSeconds >= requiredPostLiveDurationSeconds) {
+if (postLiveDurationSeconds <= requiredPostLiveDurationSeconds) {
   throw Error(`Tweet was not live long enough`)
 }
 
