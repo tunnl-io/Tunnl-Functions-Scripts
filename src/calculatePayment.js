@@ -1,6 +1,6 @@
 const offerId = bytesArgs[0]
-const payment = BigInt(bytesArgs[2])
-const offerDurationSeconds = BigInt(bytesArgs[3])
+const payment = BigInt(bytesArgs[1])
+const requiredPostLiveDurationSeconds = BigInt(bytesArgs[2])
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
@@ -29,6 +29,8 @@ const offerDataToHash = {
   creator_twitter_id: offerData.creator_twitter_id,
   required_likes: offerData.required_likes,
   sponsorship_criteria: offerData.requirements,
+  startDateSeconds: offerData.startDateSeconds, // UNIX timestamp
+  endDateSeconds: offerData.endDateSeconds, // UNIX timestamp
 }
 // Verify the integrity of the offer data by ensuring the private data SHA256 hash matches the offerId
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
@@ -64,11 +66,10 @@ if (!tweetData.created_at) {
   throw Error(`Tweet has no creation date`)
 }
 
-// The post must be live for offerDurationSeconds - 2 days
-// The reason we subtrack 2 days is the creator has 48 hours to make the post after 1st accepting the offer
-// (offer duration countdown does not start until after acceptance)
+// The post must be live for the required duration
 const postDateSeconds = BigInt(Math.floor(Date.parse(tweetData.created_at) / 1000))
-if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - (offerDurationSeconds - BigInt(60 * 60 * 48))) {
+const postLiveDurationSeconds = BigInt(Math.floor(Date.now() / 1000)) - postDateSeconds
+if (postLiveDurationSeconds >= requiredPostLiveDurationSeconds) {
   throw Error(`Tweet was not live long enough`)
 }
 

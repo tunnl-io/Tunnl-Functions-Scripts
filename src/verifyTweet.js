@@ -1,6 +1,6 @@
 const offerId = bytesArgs[0]
-const creationDateSeconds = BigInt(bytesArgs[1])
-const offerDurationSeconds = BigInt(bytesArgs[3])
+const requiredPostLiveDurationSeconds = BigInt(bytesArgs[1])
+const advertiserAddress = bytesArgs[3]
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
@@ -29,6 +29,8 @@ const offerDataToHash = {
   creator_twitter_id: offerData.creator_twitter_id,
   required_likes: offerData.required_likes,
   sponsorship_criteria: offerData.requirements,
+  startDateSeconds: offerData.startDateSeconds, // UNIX timestamp
+  endDateSeconds: offerData.endDateSeconds, // UNIX timestamp
 }
 // Verify the integrity of the offer data by ensuring the private data SHA256 hash matches the offerId
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
@@ -72,10 +74,10 @@ if (!tweetData.created_at) {
   throw Error(`Tweet has no creation date`)
 }
 
-// Ensure the creator did not try to use an old tweet for this offer
+// Ensure the post was made between the offer start and end dates
 const postDateSeconds = BigInt(Math.floor(Date.parse(tweetData.created_at) / 1000))
-if (postDateSeconds < creationDateSeconds) {
-  throw Error(`Tweet was posted before offer creation date`)
+if (postDateSeconds < offerData.startDateSeconds || postDateSeconds > offerData.endDateSeconds) {
+  throw Error(`Tweet was posted outside the offer window`)
 }
 // Ensure the tweet is at least an hour old so it cannot be edited
 if (postDateSeconds > BigInt(Math.floor(Date.now() / 1000)) - BigInt(60 * 60)) {
@@ -157,7 +159,8 @@ if (aiData.toLowerCase().includes('no')) {
 }
 
 if (aiData.toLowerCase().includes('yes')) {
-  return new Uint8Array([1])
+  const payoutDateSeconds = postDateSeconds + requiredPostLiveDurationSeconds
+  return encodeUint32(payoutDateSeconds)
 }
 
 throw Error(`Unexpected AI response neither yes or no`)
@@ -182,4 +185,14 @@ function insertUrls(tweetText, entities) {
       updatedText = updatedText.replace(url, expanded_url)
   }
   return updatedText
+}
+
+function encodeUint32(num) {
+  let hexStr = num.toString(16)
+  hexStr = hexStr.padStart(8, '0')
+  const arr = new Uint8Array(4)
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = parseInt(hexStr.slice(i * 2, i * 2 + 2), 16)
+  }
+  return arr
 }
