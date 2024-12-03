@@ -71,6 +71,7 @@ const sha256 = async (text: string) => {
     payScriptUrl: payScriptGistUrl,
   }
   console.log('\nSecrets to encrypt:', secrets)
+  console.log('\nWaiting for Ledger signature...')
   const encryptedSecrets = await secretsManager.encryptSecrets(secrets)
   const gistUrl = await createGist(process.env.GITHUB_TOKEN!, JSON.stringify(encryptedSecrets))
   console.log('\nEncrypted secrets:', gistUrl)
