@@ -24,13 +24,16 @@ if (!offerData) {
   throw Error(`No offer data found`)
 }
 
+const startDateSeconds = Math.floor(new Date(offerData.post_submission_start_date).getTime() / 1000)
+const endDateSeconds = Math.floor(new Date(offerData.post_submission_end_date).getTime() / 1000)
+
 const offerDataToHash = {
   salt: offerData.salt,
   creator_twitter_id: offerData.creator_twitter_id,
   required_likes: offerData.required_likes,
   sponsorship_criteria: offerData.requirements,
-  startDateSeconds: offerData.startDateSeconds, // UNIX timestamp
-  endDateSeconds: offerData.endDateSeconds, // UNIX timestamp
+  startDateSeconds,
+  endDateSeconds,
 }
 // Verify the integrity of the offer data by ensuring the private data SHA256 hash matches the offerId
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
