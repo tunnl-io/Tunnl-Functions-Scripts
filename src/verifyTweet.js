@@ -86,9 +86,9 @@ if (!tweetData.edit_history_tweet_ids) {
   throw Error(`Missing tweet edit history`)
 }
 // Ensure the tweet has not been edited
-if (tweetData.edit_history_tweet_ids.length > 1) {
-  throw Error(`Tweet has been edited`)
-}
+// if (tweetData.edit_history_tweet_ids.length > 1) {
+//   throw Error(`Tweet has been edited`)
+// }
 
 // Instructions Prompt
 const content = `Your job is to determine if a user's Twitter post meets the specified requirements.
@@ -108,7 +108,7 @@ const quotedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type 
 const repliedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type === 'replied_to').map((tweet) => tweet.id)
 
 // Verify the post meets the requirements
-const prompt = `The requirements are:\n${
+let aiPrompt = `The requirements are:\n${
   offerData.requirements
 }\n\n\nThe user's post text is:\n${
   tweetText
@@ -122,6 +122,9 @@ const prompt = `The requirements are:\n${
     : '\nThe post is not a reply to another post.'
 }\n\nDo you think the post meets the requirements?`
 
+aiPrompt += '\n\n\nNote that a previous draft of this post was already successfully verified. ';
+aiPrompt += `The successful verified draft post can be found below:\n\n${offerData.verified_draft}`;
+
 const aiRes = await Functions.makeHttpRequest({
   url: "https://api.openai.com/v1/chat/completions",
   method: "POST",
@@ -132,11 +135,8 @@ const aiRes = await Functions.makeHttpRequest({
   data: {
     model: "gpt-4o",
     messages: [
-      {
-        role: "system",
-        content,
-      },
-      { role: "user", content: prompt },
+      { role: "system", content },
+      { role: "user", content: aiPrompt },
     ],
     temperature: 0,
   },
