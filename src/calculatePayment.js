@@ -1,6 +1,6 @@
 const offerId = bytesArgs[0]
-const payment = BigInt(bytesArgs[1])
-const requiredPostLiveDurationSeconds = BigInt(bytesArgs[2])
+const requiredPostLiveDurationSeconds = BigInt(bytesArgs[1])
+const maxCreatorPayment = BigInt(bytesArgs[2])
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
@@ -72,13 +72,13 @@ if (!tweetData.created_at) {
 // The post must be live for the required duration
 const postDateSeconds = BigInt(Math.floor(Date.parse(tweetData.created_at) / 1000))
 const postLiveDurationSeconds = BigInt(Math.floor(Date.now() / 1000)) - postDateSeconds
-if (postLiveDurationSeconds <= requiredPostLiveDurationSeconds) {
+if (postLiveDurationSeconds >= requiredPostLiveDurationSeconds) {
   throw Error(`Tweet was not live long enough`)
 }
 
 // For the mainnet beta, we are not calculating payment based on any metrics (likes, views, etc.)
 // Future Improvement: variable payment amount based on metrics
-return Functions.encodeUint256(payment)
+return Functions.encodeUint256(maxCreatorPayment)
 
 // Library functions
 

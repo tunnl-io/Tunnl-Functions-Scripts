@@ -164,7 +164,7 @@ if (aiData.toLowerCase().includes('no')) {
 
 if (aiData.toLowerCase().includes('yes')) {
   const payoutDateSeconds = postDateSeconds + requiredPostLiveDurationSeconds
-  return encodeUint32(payoutDateSeconds)
+  return Functions.encodeUint256(payoutDateSeconds)
 }
 
 throw Error(`Unexpected AI response neither yes or no`)
@@ -189,14 +189,4 @@ function insertUrls(tweetText, entities) {
       updatedText = updatedText.replace(url, expanded_url)
   }
   return updatedText
-}
-
-function encodeUint32(num) {
-  let hexStr = num.toString(16)
-  hexStr = hexStr.padStart(8, '0')
-  const arr = new Uint8Array(4)
-  for (let i = 0; i < arr.length; i++) {
-    arr[i] = parseInt(hexStr.slice(i * 2, i * 2 + 2), 16)
-  }
-  return arr
 }
