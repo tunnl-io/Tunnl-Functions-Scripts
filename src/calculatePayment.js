@@ -1,6 +1,6 @@
 const offerId = bytesArgs[0]
-const payment = BigInt(bytesArgs[1])
-const requiredPostLiveDurationSeconds = BigInt(bytesArgs[2])
+const requiredPostLiveDurationSeconds = BigInt(bytesArgs[1])
+const maxCreatorPayment = BigInt(bytesArgs[2])
 
 // Fetch private offer data from backend
 const backendRes = await Functions.makeHttpRequest({
@@ -78,7 +78,7 @@ if (postLiveDurationSeconds < requiredPostLiveDurationSeconds) {
 
 // For the mainnet beta, we are not calculating payment based on any metrics (likes, views, etc.)
 // Future Improvement: variable payment amount based on metrics
-return Functions.encodeUint256(payment)
+return Functions.encodeUint256(maxCreatorPayment)
 
 // Library functions
 

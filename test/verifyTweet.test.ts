@@ -1,7 +1,6 @@
 import { simulateScript } from '@chainlink/functions-toolkit'
 import { readFileSync } from 'fs'
 import { config as envEncConfig } from '@chainlink/env-enc'
-require('dotenv').config();
 
 const isMainnet = process.env.STAGE === 'mainnet'
 
@@ -19,7 +18,7 @@ describe('verifyTweet', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const offerId = "efecf909612eb13fd3de53b3230df3fb17ec119fefd4cb0998470857065b0780"
+    const offerId = "d77ae4fd44172171012b5f791c2ca3f2e8489a7752857edcb2a2207ed5a83869"
 
     const result = await simulateScript({
       source: readFileSync('./src/verifyTweet.js', 'utf8'),
@@ -31,7 +30,7 @@ describe('verifyTweet', () => {
       ],
       secrets: {
         backendUrl: process.env.BACKEND_URL!,
-        verifyScriptUrl: process.env.VERIFY_SCRIPT_URL!,
+        verifyScriptUrl: process.env.VERIFY_SCRIPT_URL! ?? '',
         twitterKey: process.env.TWITTER_API_BEARER_TOKEN_2!,
         openAiKey: process.env.OPENAI_API_KEY!,
         apiKey: process.env.API_KEY!,
