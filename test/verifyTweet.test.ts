@@ -1,5 +1,17 @@
 import { simulateScript } from '@chainlink/functions-toolkit'
 import { readFileSync } from 'fs'
+import { config as envEncConfig } from '@chainlink/env-enc'
+require('dotenv').config();
+
+const isMainnet = process.env.STAGE === 'mainnet'
+
+console.log(isMainnet ? 'Mainnet' : 'Testnet')
+
+if (process.env.USE_ENV_ENC?.toLowerCase() === 'true') {
+  envEncConfig({
+    path: isMainnet ? '/Volumes/TUNNL/encryptedEnvVars/.env.enc.mainnet' : '/Volumes/TUNNL/encryptedEnvVars/.env.enc.testnet'
+  });
+}
 
 describe('verifyTweet', () => {
   it('should return a valid tweet', async () => {
@@ -7,7 +19,7 @@ describe('verifyTweet', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const offerId = "2e4b79dcbde919ddf2acb198f79cbf92cfae4c201b53aeebc74afc639a9c4801"
+    const offerId = "efecf909612eb13fd3de53b3230df3fb17ec119fefd4cb0998470857065b0780"
 
     const result = await simulateScript({
       source: readFileSync('./src/verifyTweet.js', 'utf8'),
@@ -24,6 +36,7 @@ describe('verifyTweet', () => {
         openAiKey: process.env.OPENAI_API_KEY!,
         apiKey: process.env.API_KEY!,
       },
+      maxQueryRequestBytes: 1000000,
     })
     if (result.capturedTerminalOutput) {
       console.log(result.capturedTerminalOutput)

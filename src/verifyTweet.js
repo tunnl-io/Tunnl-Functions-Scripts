@@ -32,8 +32,8 @@ const offerDataToHash = {
   creator_twitter_id: offerData.creator_twitter_id,
   required_likes: offerData.required_likes,
   sponsorship_criteria: offerData.requirements,
-  startDateSeconds,
-  endDateSeconds,
+  start_date_seconds: startDateSeconds,
+  end_date_seconds: endDateSeconds,
 }
 // Verify the integrity of the offer data by ensuring the private data SHA256 hash matches the offerId
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
@@ -163,7 +163,7 @@ if (aiData.toLowerCase().includes('no')) {
 
 if (aiData.toLowerCase().includes('yes')) {
   const payoutDateSeconds = postDateSeconds + requiredPostLiveDurationSeconds
-  return encodeUint32(payoutDateSeconds)
+  return Functions.encodeUint256(payoutDateSeconds)
 }
 
 throw Error(`Unexpected AI response neither yes or no`)
@@ -188,14 +188,4 @@ function insertUrls(tweetText, entities) {
       updatedText = updatedText.replace(url, expanded_url)
   }
   return updatedText
-}
-
-function encodeUint32(num) {
-  let hexStr = num.toString(16)
-  hexStr = hexStr.padStart(8, '0')
-  const arr = new Uint8Array(4)
-  for (let i = 0; i < arr.length; i++) {
-    arr[i] = parseInt(hexStr.slice(i * 2, i * 2 + 2), 16)
-  }
-  return arr
 }
