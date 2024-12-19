@@ -35,7 +35,6 @@ const offerDataToHash = {
   start_date_seconds: startDateSeconds,
   end_date_seconds: endDateSeconds,
 }
-
 // Verify the integrity of the offer data by ensuring the private data SHA256 hash matches the offerId
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
 if (`0x${offerDataHash}` !== offerId) {
