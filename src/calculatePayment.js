@@ -32,8 +32,8 @@ const offerDataToHash = {
   creator_twitter_id: offerData.creator_twitter_id,
   required_likes: offerData.required_likes,
   sponsorship_criteria: offerData.requirements,
-  startDateSeconds,
-  endDateSeconds,
+  start_date_seconds: startDateSeconds,
+  end_date_seconds: endDateSeconds,
 }
 // Verify the integrity of the offer data by ensuring the private data SHA256 hash matches the offerId
 const offerDataHash = await sha256(JSON.stringify(offerDataToHash))
@@ -72,7 +72,7 @@ if (!tweetData.created_at) {
 // The post must be live for the required duration
 const postDateSeconds = BigInt(Math.floor(Date.parse(tweetData.created_at) / 1000))
 const postLiveDurationSeconds = BigInt(Math.floor(Date.now() / 1000)) - postDateSeconds
-if (postLiveDurationSeconds <= requiredPostLiveDurationSeconds) {
+if (postLiveDurationSeconds < requiredPostLiveDurationSeconds) {
   throw Error(`Tweet was not live long enough`)
 }
 
