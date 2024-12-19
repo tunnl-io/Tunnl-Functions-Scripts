@@ -35,6 +35,7 @@ describe('verifyTweet', () => {
         openAiKey: process.env.OPENAI_API_KEY!,
         apiKey: process.env.API_KEY!,
       },
+      maxQueryRequestBytes: 1000000,
     })
     if (result.capturedTerminalOutput) {
       console.log(result.capturedTerminalOutput)
