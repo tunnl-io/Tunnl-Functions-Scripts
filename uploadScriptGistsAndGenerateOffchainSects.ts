@@ -64,8 +64,8 @@ const sha256 = async (text: string) => {
 
   const secrets = {
     backendUrl,
-    twitterKey: process.env.TWITTER_API_BEARER_TOKEN_2!,
-    openAiKey: process.env.OPENAI_API_KEY!,
+    // twitterKey: process.env.TWITTER_API_BEARER_TOKEN_2!,
+    // openAiKey: process.env.OPENAI_API_KEY!,
     apiKey: process.env.API_KEY!,
     verifyScriptUrl: verifyScriptGistUrl,
     payScriptUrl: payScriptGistUrl,
