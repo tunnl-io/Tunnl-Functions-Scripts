@@ -41,6 +41,11 @@ if (`0x${offerDataHash}` !== offerId) {
   throw Error(`Offer data hash mismatch 0x${offerDataHash} !== ${offerId}`)
 }
 
+// TODO: Instead of fetching the tweet in Chainlink Functions where this on all 4 Functions nodes,
+// to avoid rate limiting, we should fetch and cache the tweet in the backend.
+// Note: Since all Functions requests will be executed within a few milliseconds of each other,
+// we will need a way for the backend to mark a request as "in-flight" to prevent duplicate requests,
+// then return the cached result for all requests as soon as the first request to the Twitter API is completed.
 const twitterRes = await Functions.makeHttpRequest({
   url: `https://api.twitter.com/2/tweets/${offerData.post_id}`,
   headers: {
