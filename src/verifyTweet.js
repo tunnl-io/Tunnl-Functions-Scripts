@@ -41,6 +41,11 @@ if (`0x${offerDataHash}` !== offerId) {
   throw Error(`Offer data hash mismatch 0x${offerDataHash} !== ${offerId}`)
 }
 
+// TODO: Instead of fetching the tweet in Chainlink Functions where this on all 4 Functions nodes,
+// to avoid rate limiting, we should fetch and cache the tweet in the backend.
+// Note: Since all Functions requests will be executed within a few milliseconds of each other,
+// we will need a way for the backend to mark a request as "in-flight" to prevent duplicate requests,
+// then return the cached result for all requests as soon as the first request to the Twitter API is completed.
 const twitterRes = await Functions.makeHttpRequest({
   url: `https://api.twitter.com/2/tweets/${offerData.post_id}`,
   headers: {
@@ -95,78 +100,9 @@ if (tweetData.edit_history_tweet_ids.length > 1) {
   throw Error(`Tweet has been edited`)
 }
 
-// Instructions Prompt
-const content = `Your job is to determine if a user's Twitter post meets the specified requirements.
-Provide a one-word answer: either "Yes" if the post meets all requirements or "No" if it does not.
-Be flexible with your interpretation, considering the nature of Twitter posts, which may contain slang, sarcasm, jargon, or new language, especially related to Web3, blockchain and crypto.
-Ignore case mismatch issues unless explicitly specified.
-The requirements may explicitly state that the post must reply to or quote a specific post referenced via URL (the post ID is contained within the URL).
-Unless explicitly specified, the post cannot be a reply to another post. However, unless otherwise specified, it can quote another post. If the post is a reply or quotes another post, you will be given the referenced post ID.
-Assume a positive intent of the user to meet the requirements and interpret the post generously, unless there is a clear violation of the requirements.`
-
-// Insert full URLs into tweet text
-const tweetText = tweetData.note_tweet?.text
-  ? insertUrls(tweetData.note_tweet.text, tweetData.note_tweet.entities)
-  : insertUrls(tweetData.text, tweetData.entities)
-// Insert context if this tweet is a quote or reply
-const quotedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type === 'quoted').map((tweet) => tweet.id)
-const repliedTweetId = tweetData.referenced_tweets?.filter((tweet) => tweet.type === 'replied_to').map((tweet) => tweet.id)
-
-// Verify the post meets the requirements
-const prompt = `The requirements are:\n${
-  offerData.requirements
-}\n\n\nThe user's post text is:\n${
-  tweetText
-}${
-  quotedTweetId?.length > 0
-    ? `\n\n\nThe post quoted another post with an ID of ${quotedTweetId[0]}.`
-    : '\n\n\nThe post did not quote another post.'
-}${
-  repliedTweetId?.length > 0
-    ? `\nThe post was a reply to a post with an ID of ${repliedTweetId[0]}.`
-    : '\nThe post is not a reply to another post.'
-}\n\nDo you think the post meets the requirements?`
-
-const aiRes = await Functions.makeHttpRequest({
-  url: "https://api.openai.com/v1/chat/completions",
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${secrets.openAiKey}`,
-    "Content-Type": "application/json",
-  },
-  data: {
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content,
-      },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0,
-  },
-  timeout: 9000,
-})
-
-if (aiRes.error) {
-  throw Error(`AI Error ${aiRes.status ?? ''}`)
-}
-
-const aiData = aiRes.data?.choices?.[0]?.message?.content
-if (!aiData) {
-  throw Error(`Unexpected API Response`)
-}
-
-if (aiData.toLowerCase().includes('no')) {
-  throw Error(`Tweet does not meet the requirements`)
-}
-
-if (aiData.toLowerCase().includes('yes')) {
-  const payoutDateSeconds = postDateSeconds + requiredPostLiveDurationSeconds
-  return Functions.encodeUint256(payoutDateSeconds)
-}
-
-throw Error(`Unexpected AI response neither yes or no`)
+// We don't need to perform the AI verification as the backend will have already done this before calling submitTweet
+const payoutDateSeconds = postDateSeconds + requiredPostLiveDurationSeconds
+return Functions.encodeUint256(payoutDateSeconds)
 
 // Library functions
 
@@ -177,15 +113,4 @@ async function sha256(text) {
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
   return hashHex
-}
-
-function insertUrls(tweetText, entities) {
-  const urlEntities = entities?.urls
-  if (!urlEntities) return tweetText
-  let updatedText = tweetText
-  for (const urlEntity of urlEntities) {
-      const { url, expanded_url } = urlEntity
-      updatedText = updatedText.replace(url, expanded_url)
-  }
-  return updatedText
 }
