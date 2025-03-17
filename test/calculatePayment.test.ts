@@ -14,10 +14,10 @@ describe('calculatePayment', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const offerId = "d5cdcc95293c5d0d23b9585df3a9b3d838c9f3884501ec3c323ad295c3404482"
+    const offerId = "d77ae4fd44172171012b5f791c2ca3f2e8489a7752857edcb2a2207ed5a83869"
 
     const result = await simulateScript({
-      source: readFileSync('./src/fetchPaymentScript.js', 'utf8'),
+      source: readFileSync('./src/calculatePayment.js', 'utf8'),
       bytesArgs: [
         `0x${offerId}`,
         `0x${creationDateSeconds.toString(16)}`,
@@ -26,8 +26,8 @@ describe('calculatePayment', () => {
       ],
       secrets: {
         backendUrl: process.env.BACKEND_URL!,
-        payScriptUrl: process.env.PAY_SCRIPT_URL!,
-        twitterKey: process.env.TWITTER_API_BEARER_TOKEN_2!,
+        payScriptUrl: process.env.PAY_SCRIPT_URL ?? '',
+        // twitterKey: process.env.TWITTER_API_BEARER_TOKEN_2!,
         apiKey: process.env.API_KEY!,
       },
     })
