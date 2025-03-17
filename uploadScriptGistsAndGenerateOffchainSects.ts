@@ -48,11 +48,11 @@ const sha256 = async (text: string) => {
   if (isMainnet) {
     functionsRouterAddress = '0xf9b8fc078197181c841c296c876945aaa425b278'
     donId = 'fun-base-mainnet-1'
-    backendUrl = 'https://api-tunnl-mainnet-6l3nt.ondigitalocean.app/internal/'
+    backendUrl = 'https://api-tunnl-mainnet-6l3nt.ondigitalocean.app/internal'
   } else {
     functionsRouterAddress = '0xf9B8fc078197181C841c296C876945aaa425B278'
     donId = 'fun-base-sepolia-1'
-    backendUrl = 'https://seashell-app-npeyj.ondigitalocean.app/internal/'
+    backendUrl = 'https://seashell-app-npeyj.ondigitalocean.app/internal'
   }
 
   const secretsManager = new SecretsManager({
