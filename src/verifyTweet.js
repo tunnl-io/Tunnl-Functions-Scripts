@@ -40,7 +40,7 @@ if (tweetRes.error) {
   throw Error(`Tweet Fetch Error: ${tweetRes.status ?? ''}`)
 }
 
-if (tweetRes.data?.errors) {
+if (!tweetRes.data.data && tweetRes.data?.errors) {
   throw Error(`Tweet Fetch Response Error: ${tweetRes.data?.errors?.[0]?.title}`)
 }
 
