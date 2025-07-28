@@ -18,7 +18,7 @@ describe('verifyTweet', () => {
     const totalOfferValue = 100*10^6
     const offerDuration = 1
     
-    const offerId = "d77ae4fd44172171012b5f791c2ca3f2e8489a7752857edcb2a2207ed5a83869"
+    const offerId = "9d479ed01d4eface40b7b1c4e6260da0b4379cdd69579ad948195137b33a54b6"
 
     const result = await simulateScript({
       source: readFileSync('./src/verifyTweet.js', 'utf8'),
@@ -36,6 +36,7 @@ describe('verifyTweet', () => {
         apiKey: process.env.API_KEY!,
       },
       maxQueryRequestBytes: 1000000,
+      maxExecutionTimeMs: 40000,
     })
     if (result.capturedTerminalOutput) {
       console.log(result.capturedTerminalOutput)
