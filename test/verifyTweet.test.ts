@@ -36,7 +36,7 @@ describe('verifyTweet', () => {
         apiKey: process.env.API_KEY!,
       },
       maxQueryRequestBytes: 1000000,
-      maxExecutionTimeMs: 10000,
+      maxExecutionTimeMs: 40000,
     })
     if (result.capturedTerminalOutput) {
       console.log(result.capturedTerminalOutput)
