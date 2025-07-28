@@ -12,10 +12,10 @@ const backendRes = await Functions.makeHttpRequest({
   data: {
     offerId,
   },
-  timeout: 4000,
+  timeout: 30000,
 })
 if (backendRes.error) {
-  throw Error(`Backend Error ${backendRes.status ?? ''}`)
+  throw Error(`Backend Error ${backendRes?.code?.toString() ?? ''}: ${backendRes?.message ?? ''}`)
 }
 
 const offerData = backendRes.data
@@ -37,7 +37,7 @@ const tweetRes = await Functions.makeHttpRequest({
 })
 
 if (tweetRes.error) {
-  throw Error(`Tweet Fetch Error: ${tweetRes.status ?? ''}`)
+  throw Error(`Tweet Fetch Error: ${tweetRes?.code?.toString() ?? ''}: ${tweetRes?.message ?? ''}`)
 }
 
 if (!tweetRes.data.data && tweetRes.data?.errors) {
