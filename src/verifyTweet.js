@@ -12,7 +12,7 @@ const backendRes = await Functions.makeHttpRequest({
   data: {
     offerId,
   },
-  timeout: 30000,
+  timeout: 80000,
 })
 if (backendRes.error) {
   throw Error(`Backend Error ${backendRes?.code?.toString() ?? ''}: ${backendRes?.message ?? ''}`)
