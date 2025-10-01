@@ -33,7 +33,7 @@ const tweetRes = await Functions.makeHttpRequest({
   data: {
     tweetId: offerData.post_id,
   },
-  timeout: 4000,
+  timeout: 8200,
 })
 
 if (tweetRes.error) {
