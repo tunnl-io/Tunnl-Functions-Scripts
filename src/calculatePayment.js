@@ -12,7 +12,7 @@ const backendRes = await Functions.makeHttpRequest({
   data: {
     offerId,
   },
-  timeout: 80000,
+  timeout: 60000,
 })
 if (backendRes.error) {
   throw Error(`Backend Error ${backendRes?.code?.toString() ?? ''}: ${backendRes?.message ?? ''}`)
@@ -33,7 +33,7 @@ const tweetRes = await Functions.makeHttpRequest({
   data: {
     tweetId: offerData.post_id,
   },
-  timeout: 8200,
+  timeout: 25000,
 })
 
 if (tweetRes.error) {

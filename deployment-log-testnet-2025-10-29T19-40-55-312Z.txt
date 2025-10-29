@@ -1,0 +1,26 @@
+Tunnl Functions Script Deployment Log
+========================================
+Timestamp: 2025-10-29T19:40:55.313Z
+Environment: Testnet
+Network: Base Sepolia
+
+Script Information:
+==================
+verifyTweet.js:
+  Hash: 4c4cc81158b0db3017befb68c191e1572b7e84af1398dd63010a5d46a7290e04
+  Gist URL: https://gist.github.com/KuphJr/92d0edd0427c4e4f31205e79d8bb2e18/raw
+
+calculatePayment.js:
+  Hash: bc5fe110d1a2cfd0d87fa6f0ead20cfe5a2d962b0b2bb551cfc8a42f9579d540
+  Gist URL: https://gist.github.com/KuphJr/eec5cb67a5ba745ddb2c4ed7a277002d/raw
+
+Encrypted Secrets:
+=================
+Secrets Gist URL: https://gist.github.com/KuphJr/24de7779f2636068c8ae30caa1b5f46c/raw
+Encrypted Secrets Reference: 0x9d0d45408025f8b9ad745e13032c7ce103e49cf7be1ab272c127d224696ee7960491a97c982a36c9512ee5e0fbdee0b01fb346a2ecb0271d345a95c0c71d74d198d62e33b1fe1cb2eea85ad8ebbc126e2ea0212befb67e09042848e01ef6137a26569fde14e3393f8de80be55a0049c2b7202b96d5bcceee3df2dfc6e1e937364685578f23a8a3a95c96904ed591e4756dbe80879a9e7ace934ce9fdff8607a402
+
+Contract Configuration:
+======================
+Functions Router Address: 0xf9B8fc078197181C841c296C876945aaa425B278
+DON ID: fun-base-sepolia-1
+Backend URL: https://seashell-app-npeyj.ondigitalocean.app/internal
