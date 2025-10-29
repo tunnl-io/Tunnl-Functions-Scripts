@@ -1,6 +1,6 @@
 import { SecretsManager, createGist } from "@chainlink/functions-toolkit";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 // Note, you need to switch to the ethers v5.7.2 to run this script.
 import { ethers } from "ethers";
 import { config as envEncConfig } from '@chainlink/env-enc'
@@ -26,6 +26,41 @@ const sha256 = async (text: string) => {
     )).map(
       (b)=>b.toString(16).padStart(2,"0")
     ).join("")
+}
+
+const createLogFile = (logData: any) => {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const logFileName = `deployment-log-${isMainnet ? 'mainnet' : 'testnet'}-${timestamp}.txt`
+  const logContent = `Tunnl Functions Script Deployment Log
+========================================
+Timestamp: ${new Date().toISOString()}
+Environment: ${isMainnet ? 'Mainnet' : 'Testnet'}
+Network: ${isMainnet ? 'Base Mainnet' : 'Base Sepolia'}
+
+Script Information:
+==================
+verifyTweet.js:
+  Hash: ${logData.verifyScriptHash}
+  Gist URL: ${logData.verifyScriptGistUrl}
+
+calculatePayment.js:
+  Hash: ${logData.payScriptHash}
+  Gist URL: ${logData.payScriptGistUrl}
+
+Encrypted Secrets:
+=================
+Secrets Gist URL: ${logData.encryptedSecretsGistUrl}
+Encrypted Secrets Reference: ${logData.encryptedSecretsReference}
+
+Contract Configuration:
+======================
+Functions Router Address: ${logData.functionsRouterAddress}
+DON ID: ${logData.donId}
+Backend URL: ${logData.backendUrl}
+`
+  
+  writeFileSync(logFileName, logContent)
+  return logFileName
 }
 
 (async () => {
@@ -77,4 +112,20 @@ const sha256 = async (text: string) => {
   console.log('\nEncrypted secrets:', gistUrl)
   const encryptedSecretsReference = await secretsManager.encryptSecretsUrls([gistUrl])
   console.log('Encrypted secrets reference to set in contract config:', encryptedSecretsReference)
+
+  // Create log file with all deployment information
+  const logData = {
+    verifyScriptHash,
+    verifyScriptGistUrl,
+    payScriptHash,
+    payScriptGistUrl,
+    encryptedSecretsGistUrl: gistUrl,
+    encryptedSecretsReference,
+    functionsRouterAddress,
+    donId,
+    backendUrl
+  }
+  
+  const logFileName = createLogFile(logData)
+  console.log(`\n📝 Deployment log saved to: ${logFileName}`)
 })()

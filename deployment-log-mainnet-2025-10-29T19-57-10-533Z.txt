@@ -1,0 +1,26 @@
+Tunnl Functions Script Deployment Log
+========================================
+Timestamp: 2025-10-29T19:57:10.534Z
+Environment: Mainnet
+Network: Base Mainnet
+
+Script Information:
+==================
+verifyTweet.js:
+  Hash: 4c4cc81158b0db3017befb68c191e1572b7e84af1398dd63010a5d46a7290e04
+  Gist URL: https://gist.github.com/KuphJr/006020a4e1ad7675d8414f629f371953/raw
+
+calculatePayment.js:
+  Hash: bc5fe110d1a2cfd0d87fa6f0ead20cfe5a2d962b0b2bb551cfc8a42f9579d540
+  Gist URL: https://gist.github.com/KuphJr/2f27cedddf92c78f007fea37a903a734/raw
+
+Encrypted Secrets:
+=================
+Secrets Gist URL: https://gist.github.com/KuphJr/b438b65dcf38e63635f0063840184989/raw
+Encrypted Secrets Reference: 0xd87e32eba65f6b5fa831b4c0f084d52d03e7bf6b0b3969064b6f2e4b93d24190c98932bb964466fec8ac57400daa9767414043a657cab9490e5c31c74675a92d5bf2692c2556c7df01c4ff25f8f726d5325e66d02c311cad069755dd7e3a3a4902bb781373ec10d884b253fe02c0c31d67cf3d2e6749fbec45b9dc6511f27f64fec0eff1a6bb783fb9f1e6426ffc26f83d9f630d98a6de1d9c80efd7ff2534fce4
+
+Contract Configuration:
+======================
+Functions Router Address: 0xf9b8fc078197181c841c296c876945aaa425b278
+DON ID: fun-base-mainnet-1
+Backend URL: https://api-tunnl-mainnet-6l3nt.ondigitalocean.app/internal
